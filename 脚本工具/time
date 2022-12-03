@@ -1,0 +1,25 @@
+#!/bin/bash
+
+# 实现时间戳和时间之间的互相转换,可用于workflows
+# 当参数输入为now时，输出当前时间，形式为：'2022-12-04 00：00：00'
+# 当输入参数为nows时，输出当前时间时间戳，形式为：1670085668000
+# 当输入参数为'2022-12-04 00:00:00'，输出当前时间时间戳：1670083200000
+# 当输入参数为1670083200000，输出当前时间：2022-12-04 00:00:00
+
+# 获取入参
+arg=$1
+
+if [ "$arg" = "now" ]; then
+  time=$(date +"%Y-%m-%d %H:%M:%S")
+  echo "$time"
+elif [ "$arg" = "nows" ]; then
+  time=$(date +%s)
+  echo $(($time * 1000))
+elif [[ $arg == *:*:* ]]; then
+  time=$(date -d "$arg" +%s)
+  echo $(($time * 1000))
+elif [ $arg -gt 0 ]; then
+  seconds=$(($arg / 1000))
+  time=$(date -d @$seconds +"%Y-%m-%d %H:%M:%S")
+  echo $time
+fi
