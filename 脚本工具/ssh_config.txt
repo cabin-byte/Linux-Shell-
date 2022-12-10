@@ -1,0 +1,2 @@
+alias username ip password
+aliyun root 121.23.45.123 97321jfwe

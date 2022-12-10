@@ -1,0 +1,47 @@
+#!/bin/bash
+
+## 跳板机，可通过别名自动登录远程服务器
+
+## 第一步：判断用户是否输入别名参数
+if [[ $# -eq 0 ]]; then
+   read -p 'please input server alias: ' alias
+else
+   alias=$1
+fi
+
+## 第二步：配置文件中找到别名对应服务器信息
+FILE_PATH='./ssh_config.txt'
+while read line
+do
+  SERVER=($line)
+  if [[ "${SERVER[0]}" = "$alias" ]]; then
+      USER=${SERVER[1]}
+      IP=${SERVER[2]}
+      PWD=${SERVER[3]}
+  fi
+done <$FILE_PATH
+
+if [[ -z $USER ]] || [[ -z $IP ]] || [[ -z $PWD ]]; then
+    ## 第三步：配置不合法，提示
+    echo 'ssh config is error'
+else
+    ## 第四步：登录远程服务器
+    echo "==> 正在登录远程服务器，请稍等~~~~~~~~~远程IP:$IP"
+    expect -c "
+      ## 设置命令执行超时时间
+      set timeout 5
+      ## 创建ssh进程
+      spawn ssh $USER@$IP
+      ## 捕捉动作
+      expect {
+        \"*connecting\" { send \"yes\r\";exp_continue }
+        \"*password:\" { send \"$PWD\r\";exp_continue }
+        \"#\" { send_user \"您已成功登陆~~~~~~~~~~\n\" }
+      }
+      ## 把控制权交给用户
+      interact
+    "
+fi
+
+exit 0
+
